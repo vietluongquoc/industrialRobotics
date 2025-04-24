@@ -7,7 +7,7 @@ CoAuthor: vuonhiendai@gmail.com
 Start date: 19/04/2025
 
 ## Requirement
-- python 3.12
+- python 3.09
 - i2cpy
 - Qt5
 - pca 9685
@@ -15,17 +15,35 @@ Start date: 19/04/2025
 
 ## How to run
 - install requirement
+
 ```
-python -m venv venv
-pip install i2cpy
-pip install Qt5
-python main.py
+    <!-- create environment -->
+    python -m venv venv
+    <!-- create active -->
+    call venv/Scripts/activate
+    <!-- install package -->
+    pip install pyqt5 pyqt5-tools
+    <!-- use tools -->
+    pyqt5-tools designer
+    <!-- covert ui to tool -->
+    pyuic5 -o ver01.py ver250420.ui 
+    <!-- i2cpy -->
+    pip install i2cpy
+    <!-- numpy -->
+    pip install numpy
 
 ```
 
 ## Update
+### ver. 1.250424
+- create Project
+- create GUI  --- FINISHED
+- Test connection __ FINISHED
+- Upload the Kinematic RObot -- FInished
+list to do: add to the GUI
 ### ver. 1.250419
 - create Project
-- create GUI
-- Test connection
+- create GUI  --- FINISHED
+- Test connection __ FINISHED
+- create the DH table and control
 
