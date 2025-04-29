@@ -1,20 +1,41 @@
 from i2cpy import I2C
 
-class ServoPCA9685:
-    def __init__(self, address=0x40, bus=1, driver="ch341"):
-        self.i2c = I2C(driver)
-        self.address = address
-        self.i2c.writeByte(self.address, 0x00, 0x00)  # Set mode1 to normal mode
+class Servo:
+    def __init__(self):
+        self.i2c = I2C(driver="ch341")
+        self.PCA9685_ADDRESS = 0x40
+        self.channels = [0, 1, 2, 3, 4]
+        self.initialize_pca9685()
+    
+    def initialize_pca9685(self):
+        # PCA9685 Registers
+        # Put PCA9685 into sleep mode to configure prescaler
+        self.i2c.writeto(self.PCA9685_ADDRESS, [0x00, 0x10])
+        # Set prescaler for 50 Hz PWM frequency (prescaler = 121 for 50 Hz)
+        self.i2c.writeto(self.PCA9685_ADDRESS, [0xFE, 121])
+        # Wake up PCA9685 and enable auto-increment
+        self.i2c.writeto(self.PCA9685_ADDRESS, [0x00, 0x20])
 
     def set_pwm(self, channel, on, off):
-        self.i2c.writeByte(self.address, 0x06 + 4 * channel, on & 0xFF)
-        self.i2c.writeByte(self.address, 0x07 + 4 * channel, on >> 8)
-        self.i2c.writeByte(self.address, 0x08 + 4 * channel, off & 0xFF)
-        self.i2c.writeByte(self.address, 0x09 + 4 * channel, off >> 8)
+        MOTOR_ON_L = 0x06 + 4 * channel
+        MOTOR_OFF_L = 0x08 + 4 * channel
 
-    def set_servo_angle(self, channel, angle):
-        pulse_length = int((angle / 180.0) * (4096 - 1))  # Convert angle to pulse length
-        self.set_pwm(channel, 0, pulse_length)  # Set the pulse width for the servo
+        self.i2c.writeto(self.PCA9685_ADDRESS, [MOTOR_ON_L, on & 0xFF, (on >> 8) & 0xFF])
+        self.i2c.writeto(self.PCA9685_ADDRESS, [MOTOR_OFF_L, off & 0xFF, (off >> 8) & 0xFF])
 
-    def cleanup(self):
-        self.i2c.close()  # Close the I2C connection when done
+    def angle_to_pwm(self,angle):
+        min_pulse_width_ms = 0.5  # Minimum pulse width in milliseconds (e.g., 0.5 ms)
+        max_pulse_width_ms = 2.5  # Maximum pulse width in milliseconds (e.g., 2.5 ms)
+
+        # Map angle (0-180) to pulse width (min_pulse_width_ms to max_pulse_width_ms)
+        pulse_width_ms = min_pulse_width_ms + (angle / 180.0) * (max_pulse_width_ms - min_pulse_width_ms)
+
+        # Convert pulse width to 12-bit value (0-4095)
+        pulse_width_steps = int((pulse_width_ms / 20.0) * 4096)
+        return pulse_width_steps
+
+    # Control servo motor
+    def control_servo(self, channel, angle):
+        pwm_value = self.angle_to_pwm(angle)
+        print(f"Setting servo on channel {channel} to {angle}° (PWM value: {pwm_value})")
+        self.set_pwm(channel, on=0, off=pwm_value)

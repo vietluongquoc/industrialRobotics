@@ -7,13 +7,20 @@ class Robot:
         self.DH_d = [62.8, 0, 0, 0,0]
         self.DH_alpha = [0, -np.pi/2, 0, 0,0]
         self.dof = len(self.DH_a)-1
-        self.joint_angles = np.zeros(self.dof) # Initialize joint angles to zero
+        self.joint_angles = np.array([np.pi/2,3*np.pi/4,np.pi/4,np.pi/2]) # Initialize joint angles to zero[90, 145, 45, 90]
         self.Tmatrix = self.forward_kinematics() # Initialize transformation matrix
     
+    def degree_to_rad(self, angle):
+        # Convert angle from degrees to radians
+        return np.radians(angle)
+    
     def update_joint_angles(self, angles):
+        
         if len(angles) != self.dof:
             raise ValueError("Number of angles must match the number of degrees of freedom.")
-        self.joint_angles = np.array(angles)
+        angleRad = [self.degree_to_rad(angle) for angle in angles]
+        self.joint_angles = np.array(angleRad)
+        self.Tmatrix = self.forward_kinematics()
 
     def geometryKinematics(self):
         theta1 = self.joint_angles[0]

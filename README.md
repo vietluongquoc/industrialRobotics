@@ -35,6 +35,13 @@ Start date: 19/04/2025
 ```
 
 ## Update
+### ver. 1.250429
+- fixed bug and improve the performance
+- list to do: add to the GUI
+- fixed the i2cpy error
+- Add displace in GUI
+- join anlge is finished
+
 ### ver. 1.250424
 - create Project
 - create GUI  --- FINISHED
