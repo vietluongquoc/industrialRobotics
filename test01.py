@@ -20,8 +20,10 @@ import servoPCA9685
 import time
 
 motor = servoPCA9685.Servo()
-motor.control_servo(3, 90)  # Set servo on channel 0 to 90 degrees
+# motor.control_servo(2, 45)  # Set servo on channel 0 to 90 degrees
 # time.sleep(1)  # Wait for 1 second
 # motor.control_servo(3, 90)  # Set servo on channel 0 to 90 degrees  
 # time.sleep(1)  # Wait for 1 second
 # motor.control_servo(3, 180)  # Set servo on channel 0 to 90 degrees  
+
+# motor.read_servo_position(16)

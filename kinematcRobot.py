@@ -13,6 +13,9 @@ class Robot:
     def degree_to_rad(self, angle):
         # Convert angle from degrees to radians
         return np.radians(angle)
+    def rad_to_degree(self, angle):
+        # Convert angle from radians to degrees
+        return np.degrees(angle)
     
     def update_joint_angles(self, angles):
         
@@ -55,15 +58,9 @@ class Robot:
             T = T @ T_i
         return T
 
-    def inverse_kinematics(self, target_position = [348.3, 0, 62.8]):
-        if len(target_position) != 3:
-            raise ValueError("Target position must be a 3D coordinate (x, y, z).")
-        x, y, z = target_position
-        # Calculate the new transformation matrix based on the target position
-        T_target = self.Tmatrix.copy()
-        T_target[0, 3] = x
-        T_target[1, 3] = y
-        T_target[2, 3] = z
+    def inverse_kinematics(self, T_target):
+        if T_target.shape != (4, 4):
+            raise ValueError("Target transformation matrix must be 4x4.")
         # Calculate the angles using inverse kinematics
         initial_matrix = np.array([[1, 0, 0, 105+98.3+145],
                                    [0, 0, 1, 0],
@@ -78,13 +75,27 @@ class Robot:
             calist.append(temp2)
         calistarr = np.transpose(np.array(calist))
         # return FKinSpace(initial_matrix,calistarr, self.joint_angles)
-        theta_target = IKinSpace(calistarr,initial_matrix, T_target, self.joint_angles, 0.001, 0.1)
-        theta_angles = np.zeros(self.dof-1)
+        theta_target = IKinSpace(calistarr,initial_matrix,T_target,self.joint_angles , 0.1 , 1)
+        theta_angles = []
+
         if theta_target[1] is True:
             theta_rad = theta_target[0]
-
-            for i in range(self.dof-1):
-                theta_angles[i] = theta_rad[i]*180/np.pi
-       
+            theta_angles = [180*(theta_rad[i])/np.pi for i in range(len(theta_rad))]
         # return Blist
-        return theta_angles
+        return [theta_angles, theta_target[1]]
+
+    def joy_control(self, direction, step=5):
+        # Calculate the new transformation matrix based on the target position
+        T_target = self.Tmatrix.copy()
+        
+        if direction == 'X+':
+            T_target[0, 3] += step
+        elif direction == 'X-':
+            T_target[0, 3] -= step
+        elif direction == 'Z+':
+            T_target[2, 3] += step
+        elif direction == 'Z-':
+            T_target[2, 3] -= step
+        # Calculate the angles using inverse kinematics
+        
+        return self.inverse_kinematics(T_target)

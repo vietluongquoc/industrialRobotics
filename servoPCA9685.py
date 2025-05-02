@@ -1,11 +1,12 @@
 from i2cpy import I2C
+import time
 
 class Servo:
     def __init__(self):
         self.i2c = I2C(driver="ch341")
-        self.PCA9685_ADDRESS = 0x40
-        self.channels = [0, 1, 2, 3, 4]
+        self.PCA9685_ADDRESS = 0x40  # I2C address of PCA9685
         self.initialize_pca9685()
+        self.speed = 1  # Speed of servo motor (0-1)
     
     def initialize_pca9685(self):
         # PCA9685 Registers
@@ -33,9 +34,21 @@ class Servo:
         # Convert pulse width to 12-bit value (0-4095)
         pulse_width_steps = int((pulse_width_ms / 20.0) * 4096)
         return pulse_width_steps
-
+    
     # Control servo motor
-    def control_servo(self, channel, angle):
+    def control_servo(self, channel, tar_angle, curr_angle):
+        step = self.speed if tar_angle > curr_angle else -self.speed
+        for angle in range(curr_angle, tar_angle, step):
+            pwm_value = self.angle_to_pwm(angle)
+            self.set_pwm(channel, on=0, off=pwm_value)
+            time.sleep(0.02)
+            print(f"Setting servo on channel {channel} to {angle}° (PWM value: {pwm_value})")
+
+    def control_servo_init(self, channel, angle):
+        
         pwm_value = self.angle_to_pwm(angle)
-        print(f"Setting servo on channel {channel} to {angle}° (PWM value: {pwm_value})")
         self.set_pwm(channel, on=0, off=pwm_value)
+
+        print(f"Setting servo on channel {channel} to {angle}° (PWM value: {pwm_value})")
+
+    
